@@ -12,13 +12,12 @@ import numpy as np
 import pandas as pd
 import math
 import time
-import random
-import copy
 from sklearn.model_selection import train_test_split
 
+#my working directory
 os.chdir('C:\\Users\\Thomas\\Documents')
 
-# Opening JSON file
+#Opening JSON file, modify file path for personal use
 json_file = open('Econometrics\Master\Computer Science\paper\TVs-all-merged.json')
 json_load = json.load(json_file)
 
@@ -49,11 +48,19 @@ def modify(mylist):
     mod = []
     for t in mylist:
         t = t.replace("Inch", "inch")
+        t = t.replace("Inches", "inch")
+        t = t.replace("inches", "inch")
         t = t.replace(" inch", "inch")
         t = t.replace("-inch", "inch")
         t = t.replace("\"", "inch")
         t = t.replace("\”", "inch")
-        t = t.replace(" Hz", "Hz")
+        t = t.replace("Hz", "hz")
+        t = t.replace(" HZ", "hz")
+        t = t.replace(" Hertz", "hz")
+        t = t.replace(" hertz", "hz")
+        t = t.replace(" hz", "hz")
+        t = t.replace("-hz", "hz")
+        t = t.replace(" ", "Hz")
         t = t.replace("P", "p")
         t = t.replace(" p", "p")
         mod.append(t)
@@ -180,7 +187,7 @@ def LSH(S, b):
             for product1 in duplicates:
                 for product2 in duplicates:
                     if product1 != product2: #do not label itself als candidate
-                        if candidates.loc[product1, product2] == 0 and candidates.loc[product2, product1] == 0: #only label if not found yet (and no double labeling [A,B], [B,A])
+                        if candidates.loc[product1, product2] == 0 and candidates.loc[product2, product1] == 0: #only label if not found yet
                             candidates.loc[product1, product2] = 1
                             print('Duplicate!', product1, "and", product2)
         buckets = dict() #emtpy the buckets for the next band
@@ -232,8 +239,8 @@ def checkSim(vectormatrix, candidates, t):
 
 
 ### Running the algorithms ###
-n = 100 #number of minhashes
-b = 10 #number of bands
+n = 500 #number of minhashes
+b = 25 #number of bands
 r = int(n/b)
 threshold = (1/b)**(1/r)
 
@@ -287,7 +294,7 @@ for t1 in final:
         if final.loc[t1,t2] == 1:
             ncompsim += 1
         if realduplicates.loc[t1,t2] == 1:
-            dn += 0.5
+            dn += 0.5 #only count half of them for comparison, as we only labeled candidates once
             if pairs.loc[t1,t2] == 1:
                 dfound += 1
             if final.loc[t1,t2] == 1:
@@ -296,12 +303,12 @@ for t1 in final:
 PQ = dfound/ncomparisons
 PC = dfound/dn
 F1 = (2*PQ*PC)/(PQ+PC)
-FOC = 2*ncomparisons/(len(pairs)**2-1000)
+FOC = 2*ncomparisons/(len(pairs)**2-len(pairs))
 
 PQsim = dfsim/ncompsim
 PCsim = dfsim/dn
 F1sim = (2*PQsim*PCsim)/(PQsim+PCsim)
-FOCsim = 2*ncompsim/(len(final)**2-1000)
+FOCsim = 2*ncompsim/(len(final)**2-len(final))
 
 print(" ")
 print("--- LSH performance ---")
